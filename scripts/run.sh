@@ -6,8 +6,6 @@
 # run container
 docker run -it \
     -m 1GiB \
-    -e "GOMEMLIMIT=30MiB" \
-    -e "GOGC=100" \
-    -e "GODEBUG=gctrace=1" \
+    --env-file .env \
     -p "8080:8080" \
     gogc-demo

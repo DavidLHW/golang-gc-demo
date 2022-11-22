@@ -7,6 +7,8 @@ import (
 	"runtime/debug"
 	"strconv"
 
+	"github.com/arl/statsviz"
+	example "github.com/arl/statsviz/_example"
 	"github.com/docker/go-units"
 	"github.com/gin-gonic/gin"
 )
@@ -22,10 +24,14 @@ func main() {
 }
 
 func SetUpRouter(withRoutes bool) *gin.Engine {
+	// Force the GC to work to make the plots "move".
+	go example.Work()
+
 	r := gin.New()
 	if withRoutes {
 		r.GET("/config", readConfigHandler)
 		r.POST("/config", updateConfigHandler)
+		r.GET("/debug/statsviz/*filepath", statsvizHandler)
 	}
 	return r
 }
@@ -74,4 +80,12 @@ func updateConfigHandler(c *gin.Context) {
 	log.Printf("updated config: %+v", updated)
 
 	c.IndentedJSON(http.StatusOK, req)
+}
+
+func statsvizHandler(c *gin.Context) {
+	if c.Param("filepath") == "/ws" {
+		statsviz.Ws(c.Writer, c.Request)
+		return
+	}
+	statsviz.IndexAtRoot("/debug/statsviz").ServeHTTP(c.Writer, c.Request)
 }

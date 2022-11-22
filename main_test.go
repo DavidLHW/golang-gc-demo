@@ -132,3 +132,22 @@ func TestUpdateConfigHandler(t *testing.T) {
 		t.Errorf("TestUpdateConfigHandler: want %q, got %q", test.want, got)
 	}
 }
+
+func TestStatsvizHandler(t *testing.T) {
+	r := SetUpRouter(false)
+	r.GET("/debug/statsviz/*action", statsvizHandler)
+
+	req, _ := http.NewRequest("GET", "/debug/statsviz/", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	statusOK := w.Code == http.StatusOK
+
+	p := w.Body.Bytes()
+	pageOK := strings.Index(string(p), "<title>Statsviz</title>") > 0
+
+	if !(statusOK && pageOK) {
+		t.Errorf("TestStatsvizHandler: want %d, got %d", http.StatusOK, w.Code)
+	}
+}
